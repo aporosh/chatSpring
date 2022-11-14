@@ -6,49 +6,40 @@ import com.example.chat.services.MessageService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import lombok.AllArgsConstructor;
 import org.springframework.beans.ConversionNotSupportedException;
 import org.springframework.beans.TypeMismatchException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.http.converter.HttpMessageNotWritableException;
-import org.springframework.ui.Model;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.util.List;
 
 @RestController
-@Validated
-@AllArgsConstructor
 @RequestMapping("/api/v1/messages")
 public class RestMessageController {
-    private final MessageService messageService;
-    private final ErrorsService errorsService;
+    @Autowired
+    protected MessageService messageService;
+    @Autowired
+    protected ErrorsService errorsService;
 
-    @GetMapping
-    public ResponseEntity<String> getChat(Model model) throws JsonProcessingException {
-        String resp = JsonMapper.builder().addModules(new JavaTimeModule()).build().writeValueAsString(messageService.listMessages());
-        HttpHeaders responseHeaders = new HttpHeaders();
-        responseHeaders.setContentType(MediaType.APPLICATION_JSON);
-        return new ResponseEntity<>(resp, responseHeaders, HttpStatus.CREATED);
+    @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<List<Message>> getChat() {
+        return new ResponseEntity<>(messageService.getAll(), HttpStatus.CREATED);
     }
 
-    @PostMapping
-    @ResponseBody
-    public ResponseEntity<String> postChat(@Valid @RequestBody Message message) throws JsonProcessingException {
+    @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Message> postChat(@Valid @RequestBody Message message) {
         messageService.save(message);
-        String resp = JsonMapper.builder().addModules(new JavaTimeModule()).build().writeValueAsString(message);
-        HttpHeaders responseHeaders = new HttpHeaders();
-        responseHeaders.setContentType(MediaType.APPLICATION_JSON);
-        return new ResponseEntity<>(resp, responseHeaders, HttpStatus.CREATED);
+        return new ResponseEntity<>(message, HttpStatus.CREATED);
     }
 
-    @ResponseBody
     @ExceptionHandler({MethodArgumentNotValidException.class, HttpMessageNotReadableException.class, TypeMismatchException.class})
     public ResponseEntity<String> emptyField(Exception exception) throws JsonProcessingException {
         String resp = JsonMapper.builder().addModules(new JavaTimeModule()).build().writeValueAsString(errorsService.empty(exception.getMessage()));
