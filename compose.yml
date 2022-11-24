@@ -9,8 +9,8 @@ services:
     ports:
       - "8080:8080"
     networks:
-      - myNetTest
+      - chat_myNetTest
 networks:
   default:
     external:
-      name: myNetTest
+      name: chat_myNetTest
