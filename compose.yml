@@ -8,3 +8,8 @@ services:
     hostname: localhost
     ports:
       - "8080:8080"
+    networks:
+      - myNetTest
+networks:
+  myNetTest:
+    driver: bridge
