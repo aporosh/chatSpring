@@ -11,6 +11,5 @@ services:
     networks:
       - myNetTest
 networks:
-  default:
-    external:
-      name: myNetTest
+  myNetTest:
+    driver: bridge
